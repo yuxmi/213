@@ -258,7 +258,7 @@ long bitParity(long x) {
  *   Rating: 4
  */
 long absVal(long x) {
-    temp = x >> 63; // -1 if negative, 0 if positive
+    long temp = x >> 63; // -1 if negative, 0 if positive
     x = x^temp; // makes x positive
     temp = temp & 1; // adds 1 if x was negative
     return (x + temp);
