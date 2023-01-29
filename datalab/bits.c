@@ -142,7 +142,7 @@ extern int printf(const char *, ...);
  *   Rating: 2
  */
 long implication(long x, long y) {
-    return ((~(x ^ y)) | y);
+    return ((!(x ^ y)) | y);
 }
 /*
  * leastBitPos - return a mask that marks the position of the
