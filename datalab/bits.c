@@ -142,7 +142,7 @@ extern int printf(const char *, ...);
  *   Rating: 2
  */
 long implication(long x, long y) {
-    return ((~(x^y)) | y);
+    return ((~(x ^ y)) | y);
 }
 /*
  * leastBitPos - return a mask that marks the position of the
@@ -190,7 +190,10 @@ long fitsBits(long x, long n) {
  *  Rating: 4
  */
 long trueFiveEighths(long x) {
-    return ((x << 2 + x) + 1) >> 3;
+    long a = x >> 63;       // all zero if positive
+    x = (x + (7 & a)) >> 3; // divides by 8
+    x = (x << 2) + x;       // multiplies by 5
+    return x;
 }
 /*
  * addOK - Determine if can compute x+y without overflow
@@ -201,9 +204,15 @@ long trueFiveEighths(long x) {
  *   Rating: 3
  */
 long addOK(long x, long y) {
-    x = (x >> 63) & 1; // shows most significant bit
-    y = (y >> 63) & 1;
-    return ~(x&y);
+    long x_sign = x >> 63; // most significant bit
+    long y_sign = y >> 63;
+    long sum_sign = (x + y) >> 63;
+
+    long a = x_sign ^ y_sign;
+    long b = x_sign ^ sum_sign;
+    long c = y_sign ^ sum_sign;
+
+    return (!!a) | (!(b & c));
 }
 /*
  * isPower2 - returns 1 if x is a power of 2, and 0 otherwise
@@ -259,7 +268,7 @@ long bitParity(long x) {
  */
 long absVal(long x) {
     long temp = x >> 63; // -1 if negative, 0 if positive
-    x = x^temp; // makes x positive
-    temp = temp & 1; // adds 1 if x was negative
+    x = x ^ temp;        // makes x positive
+    temp = temp & 1;     // adds 1 if x was negative
     return (x + temp);
 }
