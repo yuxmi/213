@@ -170,7 +170,7 @@ long leastBitPos(long x) {
  *   Rating: 2
  */
 long distinctNegation(long x) {
-    return 2;
+    return !!(x + x);
 }
 /*
  * fitsBits - return 1 if x can be represented as an
