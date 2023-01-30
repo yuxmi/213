@@ -182,7 +182,9 @@ long distinctNegation(long x) {
  *   Rating: 2
  */
 long fitsBits(long x, long n) {
-    return 2L;
+    long a = x >> 63;         // most significant bit
+    long b = x >> (n + (-1)); // shift x to the right by n-1 bits
+    return !(a ^ b);
 }
 // 3
 /*
