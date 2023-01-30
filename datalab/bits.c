@@ -153,7 +153,14 @@ long implication(long x, long y) {
  *   Rating: 2
  */
 long leastBitPos(long x) {
-    return 2;
+    x = x | (x << 1); // makes every bit to the left of least 1
+    x = x | (x << 2);
+    x = x | (x << 4);
+    x = x | (x << 8);
+    x = x | (x << 16);
+    x = x | (x << 32);
+    long tmp = ~(x << 1); // shift left inverts, least bit is 1
+    return tmp & x;
 }
 /*
  * distinctNegation - returns 1 if x != -x.
