@@ -153,14 +153,9 @@ long implication(long x, long y) {
  *   Rating: 2
  */
 long leastBitPos(long x) {
-    x = x | (x << 1); // makes every bit to the left of least 1
-    x = x | (x << 2);
-    x = x | (x << 4);
-    x = x | (x << 8);
-    x = x | (x << 16);
-    x = x | (x << 32);
-    long tmp = ~(x << 1); // shift left inverts, least bit is 1
-    return tmp & x;
+    long y = ~x; // inverts x
+    y += 1; // adding 0x1 carries over until the bit is zero
+    return (x & y);
 }
 /*
  * distinctNegation - returns 1 if x != -x.
@@ -183,7 +178,7 @@ long distinctNegation(long x) {
  */
 long fitsBits(long x, long n) {
     long a = x >> 63;         // most significant bit
-    long b = x >> (n + (-1)); // shift x to the right by n-1 bits
+    long b = x >> (n + (~0)); // shift x to the right by n-1 bits
     return !(a ^ b);
 }
 // 3
