@@ -154,7 +154,7 @@ long implication(long x, long y) {
  */
 long leastBitPos(long x) {
     long y = ~x; // inverts x
-    y += 1; // adding 0x1 carries over until the bit is zero
+    y += 1;      // adding 0x1 carries over until the bit is zero
     return (x & y);
 }
 /*
@@ -227,7 +227,10 @@ long addOK(long x, long y) {
  *   Rating: 3
  */
 long isPower2(long x) {
-    return 2L;
+    long y = x + (~0);  // digits change with powers of 2
+    long tmp = x >> 63; // most significant bit of x (excludes int_min)
+    long msk = y >> 63; // most significant bit of y (excludes 0)
+    return !((x & y) | (tmp | msk));
 }
 /*
  * rotateLeft - Rotate x to the left by n
