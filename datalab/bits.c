@@ -242,11 +242,11 @@ long isPower2(long x) {
  *   Rating: 3
  */
 long rotateLeft(long x, long n) {
-    long i = (~(!!n)) + 1; // 0 if n = 0, -1 if n ≠ 0
+    long i = (~(!!n)) + 1;        // 0 if n = 0, -1 if n != 0
     long shift = (65 + (~n)) & i; // 64 - n
-    long tmp = ~(~0 << n); // tmp with lowest n bits as 1
-    long y = (x >> shift) & tmp; // shifts by 63 - n, applies tmp
-    x = x << n; // shifts x by n
+    long tmp = ~(~0 << n);        // tmp with lowest n bits as 1
+    long y = (x >> shift) & tmp;  // shifts by 63 - n, applies tmp
+    x = x << n;                   // shifts x by n
     return (x | y);
 }
 // 4
@@ -268,7 +268,13 @@ long isPalindrome(long x) {
  *   Rating: 4
  */
 long bitParity(long x) {
-    return 2L;
+    x = x ^ (x >> 32);
+    x = x ^ (x >> 16);
+    x = x ^ (x >> 8);
+    x = x ^ (x >> 4);
+    x = x ^ (x >> 2);
+    x = x ^ (x >> 1);
+    return (x & 1);
 }
 /*
  * absVal - absolute value of x
