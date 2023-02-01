@@ -194,13 +194,13 @@ long fitsBits(long x, long n) {
  *  Rating: 4
  */
 long trueFiveEighths(long x) {
-    long sign = x >> 63;       // sign bit
-    long msk_x = x & 7; // saves last 3 bits
-    msk_x = (msk_x << 2) + msk_x; // multiplies by 5
+    long sign = x >> 63;               // sign bit
+    long msk_x = x & 7;                // saves last 3 bits
+    msk_x = (msk_x << 2) + msk_x;      // multiplies by 5
     msk_x = (msk_x + (7 & sign)) >> 3; // divides by 8
-    x = x >> 3; // divides by 8
-    x = (x << 2) + x;       // multiplies by 5
-    x = x + msk_x; // adds the saved bits
+    x = x >> 3;                        // divides by 8
+    x = (x << 2) + x;                  // multiplies by 5
+    x = x + msk_x;                     // adds the saved bits
     return x;
 }
 /*
