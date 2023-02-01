@@ -194,9 +194,13 @@ long fitsBits(long x, long n) {
  *  Rating: 4
  */
 long trueFiveEighths(long x) {
-    long a = x >> 63;       // all zero if positive
-    x = (x + (7 & a)) >> 3; // divides by 8
+    long sign = x >> 63;       // sign bit
+    long msk_x = x & 7; // saves last 3 bits
+    msk_x = (msk_x << 2) + msk_x; // multiplies by 5
+    msk_x = (msk_x + (7 & sign)) >> 3; // divides by 8
+    x = x >> 3; // divides by 8
     x = (x << 2) + x;       // multiplies by 5
+    x = x + msk_x; // adds the saved bits
     return x;
 }
 /*
@@ -245,7 +249,7 @@ long rotateLeft(long x, long n) {
     long i = (~(!!n)) + 1;        // 0 if n = 0, -1 if n != 0
     long shift = (65 + (~n)) & i; // 64 - n
     long tmp = ~(~0 << n);        // tmp with lowest n bits as 1
-    long y = (x >> shift) & tmp;  // shifts by 63 - n, applies tmp
+    long y = (x >> shift) & tmp;  // shifts by 64 - n, applies tmp
     x = x << n;                   // shifts x by n
     return (x | y);
 }
