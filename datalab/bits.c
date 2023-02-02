@@ -246,12 +246,12 @@ long isPower2(long x) {
  *   Rating: 3
  */
 long rotateLeft(long x, long n) {
-    long i = (~(!!n)) + 1;        // 0 if n = 0, -1 if n != 0
-    long shift = (65 + (~n)) & i; // 64 - n
-    long tmp = ~(~0 << n);        // tmp with lowest n bits as 1
-    long y = (x >> shift) & tmp;  // shifts by 64 - n, applies tmp
-    x = x << n;                   // shifts x by n
-    return (x | y);
+    long shift = (65 + (~n)); // 64 - n
+    long msk = (~0) << shift; // mask for the first n bits rotated
+    long msk2 = ~(~0 << n); // mask for the last n bits after rotation
+    long tmp = (x & msk) >> shift; // mask on x and shifts to rotate
+    x = x << n; // shifts x over by n
+    return (x | (tmp & msk2));
 }
 // 4
 /*
@@ -272,7 +272,7 @@ long isPalindrome(long x) {
  *   Rating: 4
  */
 long bitParity(long x) {
-    x = x ^ (x >> 32);
+    x = x ^ (x >> 32); // checks number of 0's
     x = x ^ (x >> 16);
     x = x ^ (x >> 8);
     x = x ^ (x >> 4);
