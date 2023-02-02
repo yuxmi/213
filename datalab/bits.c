@@ -247,10 +247,11 @@ long isPower2(long x) {
  */
 long rotateLeft(long x, long n) {
     long shift = (65 + (~n)); // 64 - n
-    long msk = (~0) << shift; // mask for the first n bits rotated
-    long msk2 = ~(~0 << n); // mask for the last n bits after rotation
+    long neg1 = ~0;
+    long msk = neg1 << shift;      // mask for the first n bits
+    long msk2 = ~(neg1 << n);      // mask for the last n bits
     long tmp = (x & msk) >> shift; // mask on x and shifts to rotate
-    x = x << n; // shifts x over by n
+    x = x << n;                    // shifts x over by n
     return (x | (tmp & msk2));
 }
 // 4
