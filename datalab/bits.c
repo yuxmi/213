@@ -274,32 +274,32 @@ long isPalindrome(long x) {
     l = (x >> 16) & msk;
     x = r | l;
     tmp = msk >> 40;
-    msk = (tmp) | (tmp << 16) | (tmp << 32) | (tmp << 48);
+    msk = (tmp) | (tmp << 16);
+    msk = (msk << 32) | msk;
     r = (x & msk) << 8;
     l = (x >> 8) & msk;
     x = r | l;
     tmp = msk >> 52;
-    msk = (tmp) | (tmp << 8) | (tmp << 16) | (tmp << 24) | (tmp << 32) |
-          (tmp << 40) | (tmp << 48) | (tmp << 56);
+    msk = tmp | (tmp << 8);
+    msk = (msk << 16) | msk;
+    msk = (msk << 32) | msk;
     r = (x & msk) << 4;
     l = (x >> 4) & msk;
     x = r | l;
     tmp = msk >> 58;
-    msk = (tmp) | (tmp << 4) | (tmp << 8) | (tmp << 12) | (tmp << 16) |
-          (tmp << 20) | (tmp << 24) | (tmp << 28) | (tmp << 32) | (tmp << 36) |
-          (tmp << 40) | (tmp << 44) | (tmp << 48) | (tmp << 52) | (tmp << 56) |
-          (tmp << 60);
+    msk = tmp | (tmp << 4);
+    msk = (msk << 8) | msk;
+    msk = (msk << 16) | msk;
+    msk = (msk << 32) | msk;
     r = (x & msk) << 2;
     l = (x >> 2) & msk;
     x = r | l;
     tmp = msk >> 61;
-    msk = (tmp) | (tmp << 2) | (tmp << 4) | (tmp << 6) | (tmp << 8) |
-          (tmp << 10) | (tmp << 12) | (tmp << 14) | (tmp << 16) | (tmp << 18) |
-          (tmp << 20) | (tmp << 22) | (tmp << 24) | (tmp << 26) | (tmp << 28) |
-          (tmp << 30) | (tmp << 32) | (tmp << 34) | (tmp << 36) | (tmp << 38) |
-          (tmp << 40) | (tmp << 42) | (tmp << 44) | (tmp << 46) | (tmp << 48) |
-          (tmp << 50) | (tmp << 52) | (tmp << 54) | (tmp << 56) | (tmp << 58) |
-          (tmp << 60) | (tmp << 62);
+    msk = tmp | (tmp << 2);
+    msk = (msk << 4) | msk;
+    msk = (msk << 8) | msk;
+    msk = (msk << 16) | msk;
+    msk = (msk << 32) | msk;
     r = (x & msk) << 1;
     l = (x >> 1) & msk;
     x = r | l;
