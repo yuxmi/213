@@ -263,12 +263,12 @@ long rotateLeft(long x, long n) {
  *   Rating: 4
  */
 long isPalindrome(long x) {
-    long y = x; // keeps a copy of x
-    long msk = ~(~0L << 32);
-    long r = (x & msk) << 32;
-    long l = (x >> 32) & msk;
-    x = r | l;
-    long tmp = msk >> 16;
+    long y = x;               // keeps a copy of x
+    long msk = ~(~0L << 32);  // creates a half mask
+    long r = (x & msk) << 32; // takes right half of x
+    long l = (x >> 32) & msk; // takes left half of x
+    x = r | l;                // combines rotated halves
+    long tmp = msk >> 16;     // repeats for each sect
     msk = (tmp << 32) | tmp;
     r = (x & msk) << 16;
     l = (x >> 16) & msk;
@@ -280,26 +280,26 @@ long isPalindrome(long x) {
     x = r | l;
     tmp = msk >> 52;
     msk = (tmp) | (tmp << 8) | (tmp << 16) | (tmp << 24) | (tmp << 32) |
-            (tmp << 40) | (tmp << 48) | (tmp << 56);
+          (tmp << 40) | (tmp << 48) | (tmp << 56);
     r = (x & msk) << 4;
     l = (x >> 4) & msk;
     x = r | l;
     tmp = msk >> 58;
-    msk = (tmp) | (tmp << 4) | (tmp << 8) | (tmp << 12) | (tmp << 16) | 
-            (tmp << 20) | (tmp << 24) | (tmp << 28) | (tmp << 32) | (tmp << 36) 
-            | (tmp << 40) | (tmp << 44) | (tmp << 48) | (tmp << 52) | 
-            (tmp << 56) | (tmp << 60);
+    msk = (tmp) | (tmp << 4) | (tmp << 8) | (tmp << 12) | (tmp << 16) |
+          (tmp << 20) | (tmp << 24) | (tmp << 28) | (tmp << 32) | (tmp << 36) |
+          (tmp << 40) | (tmp << 44) | (tmp << 48) | (tmp << 52) | (tmp << 56) |
+          (tmp << 60);
     r = (x & msk) << 2;
     l = (x >> 2) & msk;
     x = r | l;
     tmp = msk >> 61;
-    msk = (tmp) | (tmp << 2) | (tmp << 4) | (tmp << 6) | (tmp << 8) | 
-            (tmp << 10) | (tmp << 12) | (tmp << 14) | (tmp << 16) | (tmp << 18) 
-            | (tmp << 20) | (tmp << 22) | (tmp << 24) | (tmp << 26) | 
-            (tmp << 28) | (tmp << 30) | (tmp << 32) | (tmp << 34) | (tmp << 36) 
-            | (tmp << 38) | (tmp << 40) | (tmp << 42) | (tmp << 44) | 
-            (tmp << 46) | (tmp << 48) | (tmp << 50) | (tmp << 52) | (tmp << 54) 
-            | (tmp << 56) | (tmp << 58) | (tmp << 60) | (tmp << 62);
+    msk = (tmp) | (tmp << 2) | (tmp << 4) | (tmp << 6) | (tmp << 8) |
+          (tmp << 10) | (tmp << 12) | (tmp << 14) | (tmp << 16) | (tmp << 18) |
+          (tmp << 20) | (tmp << 22) | (tmp << 24) | (tmp << 26) | (tmp << 28) |
+          (tmp << 30) | (tmp << 32) | (tmp << 34) | (tmp << 36) | (tmp << 38) |
+          (tmp << 40) | (tmp << 42) | (tmp << 44) | (tmp << 46) | (tmp << 48) |
+          (tmp << 50) | (tmp << 52) | (tmp << 54) | (tmp << 56) | (tmp << 58) |
+          (tmp << 60) | (tmp << 62);
     r = (x & msk) << 1;
     l = (x >> 1) & msk;
     x = r | l;
