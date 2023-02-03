@@ -263,7 +263,47 @@ long rotateLeft(long x, long n) {
  *   Rating: 4
  */
 long isPalindrome(long x) {
-    return 2L;
+    long y = x; // keeps a copy of x
+    long msk = ~(~0L << 32);
+    long r = (x & msk) << 32;
+    long l = (x >> 32) & msk;
+    x = r | l;
+    long tmp = msk >> 16;
+    msk = (tmp << 32) | tmp;
+    r = (x & msk) << 16;
+    l = (x >> 16) & msk;
+    x = r | l;
+    tmp = msk >> 40;
+    msk = (tmp) | (tmp << 16) | (tmp << 32) | (tmp << 48);
+    r = (x & msk) << 8;
+    l = (x >> 8) & msk;
+    x = r | l;
+    tmp = msk >> 52;
+    msk = (tmp) | (tmp << 8) | (tmp << 16) | (tmp << 24) | (tmp << 32) |
+            (tmp << 40) | (tmp << 48) | (tmp << 56);
+    r = (x & msk) << 4;
+    l = (x >> 4) & msk;
+    x = r | l;
+    tmp = msk >> 58;
+    msk = (tmp) | (tmp << 4) | (tmp << 8) | (tmp << 12) | (tmp << 16) | 
+            (tmp << 20) | (tmp << 24) | (tmp << 28) | (tmp << 32) | (tmp << 36) 
+            | (tmp << 40) | (tmp << 44) | (tmp << 48) | (tmp << 52) | 
+            (tmp << 56) | (tmp << 60);
+    r = (x & msk) << 2;
+    l = (x >> 2) & msk;
+    x = r | l;
+    tmp = msk >> 61;
+    msk = (tmp) | (tmp << 2) | (tmp << 4) | (tmp << 6) | (tmp << 8) | 
+            (tmp << 10) | (tmp << 12) | (tmp << 14) | (tmp << 16) | (tmp << 18) 
+            | (tmp << 20) | (tmp << 22) | (tmp << 24) | (tmp << 26) | 
+            (tmp << 28) | (tmp << 30) | (tmp << 32) | (tmp << 34) | (tmp << 36) 
+            | (tmp << 38) | (tmp << 40) | (tmp << 42) | (tmp << 44) | 
+            (tmp << 46) | (tmp << 48) | (tmp << 50) | (tmp << 52) | (tmp << 54) 
+            | (tmp << 56) | (tmp << 58) | (tmp << 60) | (tmp << 62);
+    r = (x & msk) << 1;
+    l = (x >> 1) & msk;
+    x = r | l;
+    return !(x ^ y);
 }
 /*
  * bitParity - returns 1 if x contains an odd number of 0's
@@ -274,7 +314,7 @@ long isPalindrome(long x) {
  */
 long bitParity(long x) {
     x = x ^ (x >> 32); // checks number of 0's
-    x = x ^ (x >> 16);
+    x = x ^ (x >> 16); // imitates a loop
     x = x ^ (x >> 8);
     x = x ^ (x >> 4);
     x = x ^ (x >> 2);
@@ -292,6 +332,6 @@ long bitParity(long x) {
 long absVal(long x) {
     long temp = x >> 63; // -1 if negative, 0 if positive
     x = x ^ temp;        // makes x positive
-    temp = temp & 1;     // adds 1 if x was negative
-    return (x + temp);
+    x = x + (temp & 1);  // adds 1 if x was negative
+    return x;
 }
