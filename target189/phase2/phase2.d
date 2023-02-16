@@ -1,5 +1,5 @@
 
-phase2.o:     file format elf64-x86-64
+phase2/phase2.o:     file format elf64-x86-64
 
 
 Disassembly of section .text:
