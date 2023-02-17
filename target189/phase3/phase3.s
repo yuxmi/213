@@ -1,2 +1,2 @@
-movq $0x55647b5c, (%rdi)
+movq $0x55647b68, %rdi
 retq
