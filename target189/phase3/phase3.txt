@@ -5,4 +5,4 @@
 00 00 00 00 00 00 00 00
 40 7b 64 55 00 00 00 00 /* address of stack */
 1a 2b 40 00 00 00 00 00 /* address of touch3 */
-33 61 66 30 35 30 36 36 00 /* hex of cookie */
+33 61 66 30 35 30 36 36 00 /* cookie string */
