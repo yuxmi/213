@@ -26,7 +26,7 @@
  *     other tricks to hide array data in other forms of local or global memory.
  *
  * TODO: fill in your name and Andrew ID below.
- * @author Your Name <andrewid@andrew.cmu.edu>
+ * @author Miu Nakajima <mnakajim@andrew.cmu.edu>
  */
 
 #include <assert.h>
@@ -124,10 +124,37 @@ static void trans_tmp(size_t M, size_t N, double A[N][M], double B[M][N],
  */
 static void transpose_submit(size_t M, size_t N, double A[N][M], double B[M][N],
                              double tmp[TMPCOUNT]) {
-    if (M == N)
+    size_t bytes = 8;
+    if (M == 32 && N == 32) {
+        for (size_t i = 0; i < M; i += bytes) {
+            for (size_t j = 0; j < N; j += bytes) {
+                for (size_t row = i; row < i + bytes; row++) {
+                    for (size_t col = j; col < j + bytes; col++) {
+                        if (row != col) {
+                            B[col][row] = A[row][col];
+                        }
+                    }
+                    if (i == j) {
+                        B[row][row] = A[row][row];
+                    }
+                }
+            }
+        }
+    } else if (M == 1024 && N == 1024) {
+        for (size_t i = 0; i < M; i += bytes) {
+            for (size_t j = 0; j < N; j += bytes) {
+                for (size_t row = i; row < i + bytes; row++) {
+                    for (size_t col = j; col < j + bytes; col++) {
+                        B[row][col] = A[col][row];
+                    }
+                }
+            }
+        }
+    } else if (M == N){
         trans_basic(M, N, A, B, tmp);
-    else
+    } else {
         trans_tmp(M, N, A, B, tmp);
+    }
 }
 
 /**

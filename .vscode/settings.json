@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "bitset": "c",
+        "chrono": "c",
+        "variant": "c",
+        "unistd.h": "c"
+    }
+}
