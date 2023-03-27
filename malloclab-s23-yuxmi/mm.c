@@ -16,7 +16,7 @@
  *
  *************************************************************************
  *
- * @author Your Name <andrewid@andrew.cmu.edu>
+ * @author Miu Nakajima <mnakajim@andrew.cmu.edu>
  */
 
 #include <assert.h>
@@ -411,33 +411,62 @@ static block_t *find_prev(block_t *block) {
 /******** The remaining content below are helper and debug routines ********/
 
 /**
- * @brief
- *
- * <What does this function do?>
- * <What are the function's arguments?>
- * <What is the function's return value?>
- * <Are there any preconditions or postconditions?>
+ * @brief Combines adjacent free blocks.
  *
  * @param[in] block
- * @return
+ * @return Coalesced (optimized) block
+ * @todo <mnakajim> debug !!!!!
  */
 static block_t *coalesce_block(block_t *block) {
-    /*
-     * TODO: delete or replace this comment once you're done.
-     *
-     * Before you start, it will be helpful to review the "Dynamic Memory
-     * Allocation: Basic" lecture, and especially the four coalescing
-     * cases that are described.
-     *
-     * The actual content of the function will probably involve a call to
-     * find_prev(), and multiple calls to write_block(). For examples of how
-     * to use write_block(), take a look at split_block().
-     *
-     * Please do not reference code from prior semesters for this, including
-     * old versions of the 213 website. We also discourage you from looking
-     * at the malloc code in CS:APP and K&R, which make heavy use of macros
-     * and which we no longer consider to be good style.
-     */
+
+    // If block is NULL or of size zero, return the block.
+    if (block == NULL || get_size(block) == 0) {
+        return block;
+    }
+
+    block_t *prev = find_prev(block); // Returns NULL if it is a proglogue.
+    block_t *next = find_next(block);
+
+    size_t block_size = get_size(block);
+
+    // Saves allocated status into a boolean variable
+    bool prev_alloc;
+    if (prev == NULL) {
+        // In the case that find_prev() returned NULL.
+        prev_alloc = 1;
+    } else {
+        prev_alloc = get_alloc(prev);
+    }
+    bool next_alloc = get_alloc(next);
+
+    if (prev_alloc && next_alloc) {
+
+        // Return original block if both prev and next are allocated.
+        return block;
+
+    } else if (!prev_alloc && next_alloc) {
+
+        // In the case prev is unallocated, coalesce with the prev block.
+        block_size += get_size(prev);
+        write_block(prev, block_size, 0);
+        return prev;
+
+    } else if (prev_alloc && !next_alloc) {
+
+        // In the case next is unallocated, coalesce with the next block.
+        block_size += get_size(next);
+        write_block(block, block_size, 0);
+        return block;
+
+    } else {
+
+        // In the case prev and next are both unallocated.
+        block_size += get_size(prev) + get_size(next);
+        write_block(prev, block_size, 0);
+        return prev;
+        
+    }
+
     return block;
 }
 
@@ -534,30 +563,43 @@ static block_t *find_fit(size_t asize) {
 }
 
 /**
- * @brief
- *
- * <What does this function do?>
- * <What are the function's arguments?>
- * <What is the function's return value?>
- * <Are there any preconditions or postconditions?>
+ * @brief Checks for errors in the heap.
  *
  * @param[in] line
- * @return
+ * @return boolean value
  */
 bool mm_checkheap(int line) {
     /*
-     * TODO: Delete this comment!
-     *
-     * You will need to write the heap checker yourself.
-     * Please keep modularity in mind when you're writing the heap checker!
-     *
      * As a filler: one guacamole is equal to 6.02214086 x 10**23 guacas.
      * One might even call it...  the avocado's number.
      *
      * Internal use only: If you mix guacamole on your bibimbap,
      * do you eat it with a pair of chopsticks, or with a spoon?
      */
-    dbg_printf("I did not write a heap checker (called at line %d)\n", line);
+
+    // Prologue and epilogue
+    block_t *prologue = (block_t*)mem_heap_lo();
+    block_t *epilogue = (block_t*)mem_heap_hi();
+    
+    if (get_size(prologue) != 0 || get_size(epilogue) != 0) {
+        // Sizes of prologue and epilogue should be 0.
+        return false;
+    } else if (!get_alloc(prologue) || !get_alloc(epilogue)) {
+        // The prologue and epilogue should be marked as allocated.
+        return false;
+    }
+
+    // Alignment
+
+
+    // Heap boundaries
+
+
+    // Header and footer consistency
+
+    
+    // Coalescing
+
     return true;
 }
 
