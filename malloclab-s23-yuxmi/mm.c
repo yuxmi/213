@@ -117,32 +117,15 @@ typedef struct block {
 
     /**
      * @brief A pointer to the block payload.
-     *
-     * TODO: feel free to delete this comment once you've read it carefully.
-     * We don't know what the size of the payload will be, so we will declare
-     * it as a zero-length array, which is a GNU compiler extension. This will
-     * allow us to obtain a pointer to the start of the payload. (The similar
-     * standard-C feature of "flexible array members" won't work here because
-     * those are not allowed to be members of a union.)
-     *
-     * WARNING: A zero-length array must be the last element in a struct, so
-     * there should not be any struct fields after it. For this lab, we will
-     * allow you to include a zero-length array in a union, as long as the
-     * union is the last field in its containing struct. However, this is
-     * compiler-specific behavior and should be avoided in general.
-     *
-     * WARNING: DO NOT cast this pointer to/from other types! Instead, you
-     * should use a union to alias this zero-length array with another struct,
-     * in order to store additional types of data in the payload memory.
-     */
-    char payload[0];
-
-    /*
-     * TODO: delete or replace this comment once you've thought about it.
-     * Why can't we declare the block footer here as part of the struct?
-     * Why do we even have footers -- will the code work fine without them?
-     * which functions actually use the data contained in footers?
-     */
+    */
+    union {
+        struct {
+            block_t *prev_empty;
+            block_t *next_empty;
+        };
+        char payload[0];
+    };
+    
 } block_t;
 
 /* Global variables */
