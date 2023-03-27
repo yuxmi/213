@@ -150,7 +150,7 @@ static void transpose_submit(size_t M, size_t N, double A[N][M], double B[M][N],
                 }
             }
         }
-    } else if (M == N){
+    } else if (M == N) {
         trans_basic(M, N, A, B, tmp);
     } else {
         trans_tmp(M, N, A, B, tmp);
