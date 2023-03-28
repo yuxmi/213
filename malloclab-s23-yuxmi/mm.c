@@ -120,8 +120,8 @@ typedef struct block {
     */
     union {
         struct {
-            struct block_t *prev_empty;
-            struct block_t *next_empty;
+            struct block *prev_empty;
+            struct block *next_empty;
         };
         char payload[0];
     };
@@ -415,7 +415,6 @@ static block_t *add_exp(block_t *block) {
  *
  * @param[in] block
  * @return Coalesced (optimized) block
- * @todo <mnakajim> debug !!!!!
  */
 static block_t *coalesce_block(block_t *block) {
 
@@ -424,7 +423,7 @@ static block_t *coalesce_block(block_t *block) {
         return block;
     }
 
-    block_t *prev = find_prev(block); // Returns NULL if it is a proglogue.
+    block_t *prev = find_prev(block); // Returns NULL if it is a prologue.
     block_t *next = find_next(block);
 
     size_t block_size = get_size(block);
@@ -498,8 +497,14 @@ static block_t *extend_heap(size_t size) {
     block_t *block_next = find_next(block);
     write_epilogue(block_next);
 
-    // Coalesce in case the previous block was free
-    block = coalesce_block(block);
+    // Coalesce in the case previous block is free
+    // Add to explicit list otherwise
+    block_t *prev = find_prev(block);
+    if (prev != NULL && get_alloc(prev) == false) {
+        block = coalesce_block(block);
+    } else {
+        add_exp(block);
+    }
 
     return block;
 }
