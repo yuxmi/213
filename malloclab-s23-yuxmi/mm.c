@@ -120,18 +120,19 @@ typedef struct block {
     */
     union {
         struct {
-            block_t *prev_empty;
-            block_t *next_empty;
+            struct block_t *prev_empty;
+            struct block_t *next_empty;
         };
         char payload[0];
     };
-    
+
 } block_t;
 
 /* Global variables */
 
 /** @brief Pointer to first block in the heap */
 static block_t *heap_start = NULL;
+static block_t *exp_start = NULL;
 
 /*
  *****************************************************************************
@@ -385,6 +386,22 @@ static block_t *find_prev(block_t *block) {
     return footer_to_header(footerp);
 }
 
+/**
+* @brief Adds block to explicit list if it is free.
+* @param[in] block Unallocated block
+* @return 
+*/
+static block_t *add_exp(block_t *block) {
+    if (exp_start == NULL) {
+        exp_start = block;
+    } else {
+        exp_start->prev_empty = block;
+        block->next_empty = exp_start;
+        exp_start = block;
+    }
+    return block;
+}
+
 /*
  * ---------------------------------------------------------------------------
  *                        END SHORT HELPER FUNCTIONS
@@ -472,13 +489,6 @@ static block_t *extend_heap(size_t size) {
     if ((bp = mem_sbrk((intptr_t)size)) == (void *)-1) {
         return NULL;
     }
-
-    /*
-     * TODO: delete or replace this comment once you've thought about it.
-     * Think about what bp represents. Why do we write the new block
-     * starting one word BEFORE bp, but with the same size that we
-     * originally requested?
-     */
 
     // Initialize free block header/footer
     block_t *block = payload_to_header(bp);
@@ -604,12 +614,6 @@ bool mm_init(void) {
         return false;
     }
 
-    /*
-     * TODO: delete or replace this comment once you've thought about it.
-     * Think about why we need a heap prologue and epilogue. Why do
-     * they correspond to a block footer and header respectively?
-     */
-
     start[0] = pack(0, true); // Heap prologue (block footer)
     start[1] = pack(0, true); // Heap epilogue (block header)
 
@@ -718,6 +722,9 @@ void free(void *bp) {
 
     // Try to coalesce the block with its neighbors
     coalesce_block(block);
+
+    // Add block to explicit list
+    add_exp(block);
 
     dbg_ensures(mm_checkheap(__LINE__));
 }
