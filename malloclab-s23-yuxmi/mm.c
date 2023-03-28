@@ -386,10 +386,11 @@ static block_t *find_prev(block_t *block) {
     return footer_to_header(footerp);
 }
 
+
 /**
-* @brief Adds block to explicit list if it is free.
-* @param[in] block Unallocated block
-* @return 
+ * @brief Adds block to explicit list if it is free.
+ * @param[in] block Unallocated block
+ * @return Newly queued unallocated block
 */
 static block_t *add_exp(block_t *block) {
     if (exp_start == NULL) {
@@ -400,6 +401,50 @@ static block_t *add_exp(block_t *block) {
         exp_start = block;
     }
     return block;
+}
+
+/**
+ * @brief Finds the first open block larger than given size.
+ * @param[in] size
+ * @return Open block of given size, NULL if none
+*/
+static block_t *find_open(size_t size) {
+    block_t *tmp = exp_start;
+    while (tmp != NULL) {
+        if (get_size(tmp) > size) {
+            return tmp;
+        }
+        tmp = tmp->next_empty;
+    }
+    return NULL;
+}
+
+/**
+ * @brief Removes the block from explicit list.
+ * @param[in] block
+*/
+static void remove_exp(block_t *block) {
+    block_t *prev_open = block->prev_empty;
+    block_t *next_open = block->next_empty;
+    bool prev_null = (prev_open == NULL);
+    bool next_null = (next_open == NULL);
+
+    if (prev_null && next_null) {
+        // If block is the only open block
+        exp_start = NULL;
+    } else if (prev_null && !next_null) {
+        // If block is the first block
+        exp_start = next_open;
+        next_open->prev_empty = NULL;
+    } else if (next_null && !prev_null) {
+        // If block is the last block
+        prev_open->next_empty = NULL;
+    } else {
+        prev_open->next_empty = next_open;
+        next_open->prev_empty = prev_open;
+    }
+    block->next_empty = NULL;
+    block->prev_empty = NULL;
 }
 
 /*
@@ -470,15 +515,10 @@ static block_t *coalesce_block(block_t *block) {
 }
 
 /**
- * @brief
- *
- * <What does this function do?>
- * <What are the function's arguments?>
- * <What is the function's return value?>
- * <Are there any preconditions or postconditions?>
+ * @brief Makes heap larger by a given size.
  *
  * @param[in] size
- * @return
+ * @return Newly created free block
  */
 static block_t *extend_heap(size_t size) {
     void *bp;
@@ -499,7 +539,7 @@ static block_t *extend_heap(size_t size) {
 
     // Coalesce in the case previous block is free
     // Add to explicit list otherwise
-    block_t *prev = find_prev(block);
+    block_t *prev = find_prev(block); // Returns NULL if it is a prologue
     if (prev != NULL && get_alloc(prev) == false) {
         block = coalesce_block(block);
     } else {
@@ -510,19 +550,14 @@ static block_t *extend_heap(size_t size) {
 }
 
 /**
- * @brief
- *
- * <What does this function do?>
- * <What are the function's arguments?>
- * <What is the function's return value?>
- * <Are there any preconditions or postconditions?>
+ * @brief Splits block into two blocks: asize, blocksize - asize.
  *
  * @param[in] block
  * @param[in] asize
  */
 static void split_block(block_t *block, size_t asize) {
     dbg_requires(get_alloc(block));
-    /* TODO: Can you write a precondition about the value of asize? */
+    // dbg_requires(round_up(asize, dsize) == asize);
 
     size_t block_size = get_size(block);
 
@@ -532,21 +567,16 @@ static void split_block(block_t *block, size_t asize) {
 
         block_next = find_next(block);
         write_block(block_next, block_size - asize, false);
+        add_exp(block_next);
     }
 
     dbg_ensures(get_alloc(block));
 }
 
 /**
- * @brief
- *
- * <What does this function do?>
- * <What are the function's arguments?>
- * <What is the function's return value?>
- * <Are there any preconditions or postconditions?>
- *
+ * @brief Finds an unallocated block larger than given size.
  * @param[in] asize
- * @return
+ * @return Block that fits given size and is unallocated
  */
 static block_t *find_fit(size_t asize) {
     block_t *block;
@@ -669,8 +699,8 @@ void *malloc(size_t size) {
     // Adjust block size to include overhead and to meet alignment requirements
     asize = round_up(size + dsize, dsize);
 
-    // Search the free list for a fit
-    block = find_fit(asize);
+    // Search the explicit list for a fit
+    block = find_open(asize);
 
     // If no fit is found, request more memory, and then and place the block
     if (block == NULL) {
@@ -682,6 +712,9 @@ void *malloc(size_t size) {
             return bp;
         }
     }
+
+    // Remove block from explicit list
+    remove_exp(block);
 
     // The block should be marked as free
     dbg_assert(!get_alloc(block));
