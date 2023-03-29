@@ -136,14 +136,12 @@ static block_t *heap_start = NULL;
 /** @brief Pointer to first block in explicit list */
 // static block_t *exp_start = NULL;
 
-static const size_t seglist_size = 14;
+static const size_t seglist_size = 8;
 
 /** @brief Pointers to first block of segregated lists */
-static block_t *seglist[14] = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-                                NULL, NULL, NULL, NULL, NULL, NULL};
+static block_t *seglist[14] = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
 
-static size_t bounds[14] = {32, 48, 64, 128, 256, 384, 512, 766, 1024, 2048,
-                            3072, 4096, 5120, 6144};
+static size_t bounds[14] = {32, 64, 128, 256, 512, 1024, 2048, 4096};
 
 /*
  *****************************************************************************
