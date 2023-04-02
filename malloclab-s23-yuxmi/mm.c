@@ -395,41 +395,6 @@ static block_t *find_prev(block_t *block) {
     return footer_to_header(footerp);
 }
 
-static void print_seg_list() {
-
-    for (size_t i = 0; i < seglist_size; i++) {
-        block_t *tmp = seglist[i];
-        printf("SEG LIST %zu:\n", i);
-        while (tmp != NULL) {
-            printf("Header: %lu, Allocated: %d, Address: %p\n", tmp->header,
-                get_alloc(tmp), (void *)tmp);
-            tmp = tmp->next_empty;
-        }
-    }
-
-}
-
-static void print_heap() {
-
-    block_t *tmp = heap_start;
-    printf("HEAP:\n");
-    while (get_size(tmp) != 0) {
-        printf(
-            "Header: %lu, Size: %lu, Allocated: %d, Address: %p\n",
-            tmp->header, get_size(tmp), get_alloc(tmp), (void *)tmp);
-        tmp = find_next(tmp);
-    }
-
-}
-
-static void print_block(block_t *block) {
-
-    printf("CURRENT BLOCK:\n");
-    printf("Header: %lu, Allocated: %d, Address: %p\n", block->header,
-            get_alloc(block), (void*)block);
-            
-}
-
 /**
  * @brief Determines which segregated free list to put block in
  * 
@@ -662,39 +627,40 @@ static void split_block(block_t *block, size_t asize) {
 }
 
 /**
- * @brief Finds an unallocated block larger than given size.
+ * @brief Finds smallest unallocated block larger than given size.
  * @param[in] asize
  * @return Block that fits given size and is unallocated
  */
 static block_t *find_fit(size_t asize) {
-    block_t *block;
+    block_t *tmp;
+    block_t *curr_best = NULL;
+    size_t best_size = 0;
 
-    for (block = heap_start; get_size(block) > 0; block = find_next(block)) {
+    for (size_t i = find_index(asize); i < seglist_size; i++) {
 
-        if (!(get_alloc(block)) && (asize <= get_size(block))) {
-            return block;
+        tmp = seglist[i];
+
+        while (tmp != NULL) {
+
+            size_t blocksize = get_size(tmp);
+            if (blocksize == asize) {
+                return tmp;
+            } else if (blocksize > asize) {
+                if (blocksize < best_size || best_size == 0) {
+                    curr_best = tmp;
+                    best_size = blocksize;
+                }
+            }
+            tmp = tmp->next_empty;
+
         }
-    }
-    return NULL; // no fit found
-}
 
-/**
- * @brief Finds the first open block larger than given size.
- * @param[in] size
- * @return Open block of given size, NULL if none
-*/
-static block_t *find_open(size_t size) {
-    // printf("Finding open block from explicit list...\n");
-
-    block_t *tmp = seglist[find_index(size)];
-    while (tmp != NULL) {
-        if (get_size(tmp) >= size) {
-            return tmp;
+        if (curr_best != NULL) {
+            return curr_best;
         }
-        tmp = tmp->next_empty;
+
     }
     return NULL;
-
 }
 
 /**
@@ -883,7 +849,7 @@ void *malloc(size_t size) {
     asize = round_up(size + dsize, dsize);
 
     // Search the explicit list for a fit
-    block = find_open(asize);
+    block = find_fit(asize);
 
     // If no fit is found, request more memory, and then and place the block
     if (block == NULL) {
