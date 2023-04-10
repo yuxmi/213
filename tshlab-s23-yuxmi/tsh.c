@@ -8,8 +8,7 @@
  *  Follow the 15-213/18-213/15-513 style guide at
  *  http://www.cs.cmu.edu/~213/codeStyle.html.>
  *
- * @author Your Name <andrewid@andrew.cmu.edu>
- * TODO: Include your name and Andrew ID here.
+ * @author Miu Nakajima <mnakajim@andrew.cmu.edu>
  */
 
 #include "csapp.h"
@@ -181,6 +180,9 @@ void eval(const char *cmdline) {
     }
 
     // TODO: Implement commands here.
+    if (strcmp(token.argv[0], "quit") == 0) {
+        exit(0);
+    }
 }
 
 /*****************
