@@ -171,6 +171,8 @@ int main(int argc, char **argv) {
 void eval(const char *cmdline) {
     parseline_return parse_result;
     struct cmdline_tokens token;
+    pid_t pid;
+    int bg;
 
     // Parse command line
     parse_result = parseline(cmdline, &token);
@@ -183,6 +185,24 @@ void eval(const char *cmdline) {
     if (strcmp(token.argv[0], "quit") == 0) {
         exit(0);
     }
+
+    pid = fork();
+
+    if (pid < 0) {
+
+        printf("error\n");
+        exit(0);
+
+    } else if (pid == 0) { /* Child */
+
+        if (execve(token.argv[0], token.argv, environ) < 0) {
+            printf("%s: Command not found.\n", token.argv[0]);
+            exit(0);   
+        }
+
+    } else {
+        waitpid(-1, NULL, 0);
+    }
 }
 
 /*****************
@@ -190,9 +210,8 @@ void eval(const char *cmdline) {
  *****************/
 
 /**
- * @brief <What does sigchld_handler do?>
- *
- * TODO: Delete this comment and replace it with your own.
+ * @brief Handles signals for sigchld. Kernel sends sigchld to the shell when a 
+ * child process terminates.
  */
 void sigchld_handler(int sig) {}
 
@@ -224,3 +243,10 @@ void cleanup(void) {
 
     destroy_job_list();
 }
+
+// /**
+//  * @brief Determines whether or not command is built-in
+// */
+// bool builtin_cmd(struct cmdline_tokens *tok, int *input_fd, int *output_fd) {
+
+// }
