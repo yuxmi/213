@@ -51,6 +51,7 @@ void sigtstp_handler(int sig);
 void sigint_handler(int sig);
 void sigquit_handler(int sig);
 void cleanup(void);
+bool builtin_cmd(struct cmdline_tokens tok);
 
 /**
  * @brief <Write main's function header documentation. What does main do?>
@@ -182,26 +183,28 @@ void eval(const char *cmdline) {
     }
 
     // TODO: Implement commands here.
-    if (strcmp(token.argv[0], "quit") == 0) {
-        exit(0);
-    }
+    if (!builtin_cmd(token)) {
+        pid = fork();
+        if (pid < 0) {
 
-    pid = fork();
+            printf("error\n");
+            exit(0);
 
-    if (pid < 0) {
+        } else if (pid == 0) { /* Child */
 
-        printf("error\n");
-        exit(0);
+            if (execve(token.argv[0], token.argv, environ) < 0) {
+                printf("%s: Command not found.\n", token.argv[0]);
+                exit(0);   
+            }
 
-    } else if (pid == 0) { /* Child */
+        } else {
 
-        if (execve(token.argv[0], token.argv, environ) < 0) {
-            printf("%s: Command not found.\n", token.argv[0]);
-            exit(0);   
+            bg = (parse_result == PARSELINE_BG);
+            if (!bg) {
+                waitpid(pid, NULL, 0);
+            }
+            
         }
-
-    } else {
-        waitpid(-1, NULL, 0);
     }
 }
 
@@ -244,9 +247,18 @@ void cleanup(void) {
     destroy_job_list();
 }
 
-// /**
-//  * @brief Determines whether or not command is built-in
-// */
-// bool builtin_cmd(struct cmdline_tokens *tok, int *input_fd, int *output_fd) {
+/**
+ * @brief Determines whether or not command is built-in
+*/
+bool builtin_cmd(struct cmdline_tokens tok) {
 
-// }
+    if (!strcmp(tok.argv[0], "quit")) {
+        exit(0);
+    }
+    if (!strcmp(tok.argv[0], "&")) {
+        return 1;
+        return 0;
+    }
+    return false;
+
+}
