@@ -174,6 +174,14 @@ void eval(const char *cmdline) {
     struct cmdline_tokens token;
     pid_t pid;
     int bg;
+    sigset_t mask;
+    sigset_t prev;
+
+    sigemptyset(&mask);
+    sigaddset(&mask, SIGCHLD);
+    sigaddset(&mask, SIGINT);
+    sigaddset(&mask, SIGTSTP);
+    sigprocmask(SIG_BLOCK, &mask, &prev);
 
     // Parse command line
     parse_result = parseline(cmdline, &token);
@@ -184,6 +192,7 @@ void eval(const char *cmdline) {
 
     // TODO: Implement commands here.
     if (!builtin_cmd(token)) {
+
         pid = fork();
         if (pid < 0) {
 
@@ -191,6 +200,9 @@ void eval(const char *cmdline) {
             exit(0);
 
         } else if (pid == 0) { /* Child */
+
+            setpgid(0,0);
+            sigprocmask(SIG_SETMASK, &prev, NULL); // Unblock SIGCHLD
 
             if (execve(token.argv[0], token.argv, environ) < 0) {
                 printf("%s: Command not found.\n", token.argv[0]);
@@ -200,12 +212,25 @@ void eval(const char *cmdline) {
         } else {
 
             bg = (parse_result == PARSELINE_BG);
-            if (!bg) {
-                waitpid(pid, NULL, 0);
+            if (!bg) { // Foreground
+
+                jid_t jid = add_job(pid, FG, cmdline);
+                while (fg_job() == jid) {
+                    sigsuspend(&prev);
+                }
+
+            } else { // Background
+
+                jid_t jid = add_job(pid, BG, cmdline);
+                printf("[%d] (%d) %s\n", jid, pid, cmdline);
+                
             }
-            
+
         }
     }
+
+    sigprocmask(SIG_SETMASK, &prev, NULL); // Restore old signals
+
 }
 
 /*****************
@@ -216,21 +241,109 @@ void eval(const char *cmdline) {
  * @brief Handles signals for sigchld. Kernel sends sigchld to the shell when a 
  * child process terminates.
  */
-void sigchld_handler(int sig) {}
+void sigchld_handler(int sig) {
+
+    int olderrno = errno;
+    sigset_t mask_all;
+    sigset_t prev_all;
+    pid_t pid;
+    jid_t jid;
+    int status;
+
+    sigfillset(&mask_all);
+
+    while ((pid = waitpid(-1, &status, WNOHANG | WUNTRACED | WCONTINUED)) > 0) {
+
+        sigprocmask(SIG_BLOCK, &mask_all, &prev_all);
+
+        if (WIFSIGNALED(status)) {
+
+            jid = job_from_pid(pid);
+            printf("Job [%d] (%d) terminated by signal %d\n", jid, pid, 
+                                                            WTERMSIG(status));
+            delete_job(jid);
+
+        } else if (WIFSTOPPED(status)) {
+
+            jid = job_from_pid(pid);
+            printf("Job [%d] (%d) stopped by signal %d\n", jid, pid, 
+                                                            WSTOPSIG(status));
+            job_set_state(jid, ST);
+
+        } else if (WIFEXITED(status)) {
+
+            jid = job_from_pid(pid);
+            delete_job(jid); // Delete job from job list
+
+        } 
+
+    }
+
+    sigprocmask(SIG_SETMASK, &prev_all, NULL);
+
+    if (errno != ECHILD) {
+        strerror(errno);
+    }
+
+    errno = olderrno;
+
+}
 
 /**
  * @brief <What does sigint_handler do?>
  *
  * TODO: Delete this comment and replace it with your own.
  */
-void sigint_handler(int sig) {}
+void sigint_handler(int sig) {
+
+    int olderrno = errno;
+    sigset_t mask_all;
+    sigset_t prev_all;
+    pid_t pid;
+    jid_t jid;
+
+    sigfillset(&mask_all);
+    sigprocmask(SIG_BLOCK, &mask_all, &prev_all);
+
+    jid = fg_job();
+    if (jid > 0) {
+        pid = job_get_pid(jid);
+        kill(-pid, SIGINT);
+    }
+
+    sigprocmask(SIG_SETMASK, &prev_all, NULL);
+
+    errno = olderrno;
+
+}
 
 /**
  * @brief <What does sigtstp_handler do?>
  *
  * TODO: Delete this comment and replace it with your own.
  */
-void sigtstp_handler(int sig) {}
+void sigtstp_handler(int sig) {
+
+    int olderrno = errno;
+    sigset_t mask_all;
+    sigset_t prev_all;
+    pid_t pid;
+    jid_t jid;
+
+    sigfillset(&mask_all);
+    sigprocmask(SIG_BLOCK, &mask_all, &prev_all);
+
+    jid = fg_job();
+    if (jid > 0) {
+        pid = job_get_pid(jid);
+        kill(-pid, SIGTSTP);
+    }
+
+    sigprocmask(SIG_SETMASK, &prev_all, NULL);
+
+    errno = olderrno;
+
+}
 
 /**
  * @brief Attempt to clean up global resources when the program exits.
@@ -253,12 +366,24 @@ void cleanup(void) {
 bool builtin_cmd(struct cmdline_tokens tok) {
 
     if (!strcmp(tok.argv[0], "quit")) {
+
         exit(0);
+
+    } else if (!strcmp(tok.argv[0], "jobs")) {
+
+        list_jobs(STDOUT_FILENO);
+        return true;
+
+    } else if (BUILTIN_FG) {
+
+        return true;
+
+    } else if (BUILTIN_BG) {
+
+        return true;
+        
     }
-    if (!strcmp(tok.argv[0], "&")) {
-        return 1;
-        return 0;
-    }
+
     return false;
 
 }
